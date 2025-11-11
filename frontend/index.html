@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frontend Docker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Docker Compose App</h1>
+
+    <button onclick="fetchData()">Get Backend Data</button>
+    <button onclick="fetchUsers()">Get Users Data</button>
+
+    <div id="result">Click to test...</div>
+  </div>
+
+  <script>
+    // Récupérer /api
+    async function fetchData() {
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = 'Loading...';
+
+      try {
+        const response = await fetch('http://localhost:3000/api');
+        const data = await response.json();
+
+        resultDiv.innerHTML = `
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+          <p style="color: green;">Success via /api!</p>
+        `;
+      } catch (error) {
+        resultDiv.innerHTML = `
+          <p style="color: red;">Erreur : ${error.message}</p>
+          <p>Vérifie le CORS ou les logs du backend.</p>
+        `;
+        console.error('Fetch error:', error);
+      }
+    }
+
+    // Récupérer /users
+    async function fetchUsers() {
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = 'Loading users...';
+
+      try {
+        const response = await fetch('http://localhost:3000/users');
+        const data = await response.json();
+
+        if(data.success) {
+          let html = '<h2>Liste des utilisateurs :</h2><ul>';
+          data.users.forEach(user => {
+            html += `<li>ID: ${user.id}, Name: ${user.name}</li>`;
+          });
+          html += '</ul>';
+          resultDiv.innerHTML = html;
+        } else {
+          resultDiv.innerHTML = `<p style="color:red">Erreur : ${data.error}</p>`;
+        }
+
+      } catch (error) {
+        resultDiv.innerHTML = `
+          <p style="color:red">Fetch error: ${error.message}</p>
+          <p>Vérifie le CORS ou les logs du backend.</p>
+        `;
+        console.error('Fetch error:', error);
+      }
+    }
+
+    // Test auto après 1s pour /api
+    setTimeout(fetchData, 1000);
+  </script>
+</body>
+</html>
+
