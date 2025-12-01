@@ -35,7 +35,7 @@ app.use(cors({
 // ------------------------------
 app.get("/api", (req, res) => {
   res.json({
-    message: "Hello from Backend!",
+    message: "Hello CI - modification test !",
     timestamp: new Date().toISOString(),
     client: req.get("Origin") || "unknown",
     success: true,
