@@ -1,53 +1,76 @@
-const express = require('express');
-const cors = require('cors');
-const pool = require('./db');
+const express = require("express");          // Framework web
+const cors = require("cors");                // Gestion CORS
+const { Pool } = require("pg");              // Client PostgreSQL
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;       // Port configurable
 
-// Middleware
+// ------------------------------
+// DATABASE CONFIGURATION
+// ------------------------------
+const pool = new Pool({
+  host: process.env.DB_HOST || "db",
+  port: process.env.DB_PORT || 5432,
+  user: process.env.DB_USER || "admin",
+  password: process.env.DB_PASSWORD || "secret",
+  database: process.env.DB_NAME || "mydb",
+});
+
+// ------------------------------
+// MIDDLEWARE CORS
+// ------------------------------
 app.use(cors({
   origin: [
     "http://localhost:8080",
     "http://127.0.0.1:8080",
-    "http://frontend" // Nom du service Docker si utilisé dans Compose
+    "http://localhost:*",     // Dev only
+    "http://backend",
   ],
   methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type"]
+  allowedHeaders: ["Content-Type"],
 }));
-app.use(express.json());
 
-// Route de test général
+// ------------------------------
+// ROUTE API PRINCIPALE
+// ------------------------------
 app.get("/api", (req, res) => {
   res.json({
     message: "Hello from Backend!",
     timestamp: new Date().toISOString(),
     client: req.get("Origin") || "unknown",
-    success: true
+    success: true,
   });
 });
 
-// Route test DB
-app.get("/db-test", async (req, res) => {
+// ------------------------------
+// ROUTE POUR TEST DATABASE
+// ------------------------------
+app.get("/db", async (req, res) => {
   try {
-    const result = await pool.query('SELECT NOW()');
-    res.json({ success: true, server_time: result.rows[0] });
+    const result = await pool.query("SELECT * FROM users");
+    
+    res.json({
+      message: "Data from Database",
+      data: result.rows,
+      timestamp: new Date().toISOString(),
+      success: true,
+    });
+    
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({
+      message: "Database error",
+      error: err.message,
+      success: false,
+    });
   }
 });
 
-app.get("/users", async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM test_users');
-    res.json({ success: true, users: result.rows });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// Lancement du serveur
+// ------------------------------
+// DÉMARRAGE SERVEUR
+// ------------------------------
 app.listen(PORT, () => {
-  console.log(`Backend running on port ${PORT}`);
+  console.log(`Backend listening on port ${PORT}`);
+  console.log(`API endpoint:  http://localhost:${PORT}/api`);
+  console.log(`DB endpoint:   http://localhost:${PORT}/db`);
 });
 

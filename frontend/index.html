@@ -1,76 +1,63 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Frontend Docker</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend - TP Docker</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Docker Compose App</h1>
 
-    <button onclick="fetchData()">Get Backend Data</button>
-    <button onclick="fetchUsers()">Get Users Data</button>
+<header>
+    <h1>TP Docker Avancé</h1>
+    <p>Visualisation du Backend & de la Base de Données</p>
+</header>
 
-    <div id="result">Click to test...</div>
-  </div>
+<div class="cards">
 
-  <script>
-    // Récupérer /api
-    async function fetchData() {
-      const resultDiv = document.getElementById('result');
-      resultDiv.innerHTML = 'Loading...';
+    <div class="card">
+        <h2>Backend API</h2>
+        <div id="api-response" class="response">Chargement...</div>
+    </div>
 
-      try {
-        const response = await fetch('http://localhost:3000/api');
-        const data = await response.json();
+    <div class="card">
+        <h2>Base de Données</h2>
+        <div id="db-response" class="response">Chargement...</div>
+    </div>
 
-        resultDiv.innerHTML = `
-          <pre>${JSON.stringify(data, null, 2)}</pre>
-          <p style="color: green;">Success via /api!</p>
-        `;
-      } catch (error) {
-        resultDiv.innerHTML = `
-          <p style="color: red;">Erreur : ${error.message}</p>
-          <p>Vérifie le CORS ou les logs du backend.</p>
-        `;
-        console.error('Fetch error:', error);
-      }
+</div>
+
+<footer>
+    <p>TP Docker • Frontend Statique • 2025</p>
+</footer>
+
+<script>
+async function fetchData() {
+    try {
+        const apiResponse = await fetch("http://localhost:3000/api");
+        if (!apiResponse.ok) throw new Error("API request failed");
+
+        const apiData = await apiResponse.json();
+        document.getElementById("api-response").innerText =
+            JSON.stringify(apiData, null, 2);
+
+        const dbResponse = await fetch("http://localhost:3000/db");
+        if (!dbResponse.ok) throw new Error("Database request failed");
+
+        const dbData = await dbResponse.json();
+        document.getElementById("db-response").innerText =
+            JSON.stringify(dbData, null, 2);
+
+    } catch (error) {
+        document.getElementById("api-response").innerText = `❌ ${error.message}`;
+        document.getElementById("db-response").innerText = `❌ ${error.message}`;
     }
+}
 
-    // Récupérer /users
-    async function fetchUsers() {
-      const resultDiv = document.getElementById('result');
-      resultDiv.innerHTML = 'Loading users...';
+setTimeout(fetchData, 1000);
+</script>
 
-      try {
-        const response = await fetch('http://localhost:3000/users');
-        const data = await response.json();
-
-        if(data.success) {
-          let html = '<h2>Liste des utilisateurs :</h2><ul>';
-          data.users.forEach(user => {
-            html += `<li>ID: ${user.id}, Name: ${user.name}</li>`;
-          });
-          html += '</ul>';
-          resultDiv.innerHTML = html;
-        } else {
-          resultDiv.innerHTML = `<p style="color:red">Erreur : ${data.error}</p>`;
-        }
-
-      } catch (error) {
-        resultDiv.innerHTML = `
-          <p style="color:red">Fetch error: ${error.message}</p>
-          <p>Vérifie le CORS ou les logs du backend.</p>
-        `;
-        console.error('Fetch error:', error);
-      }
-    }
-
-    // Test auto après 1s pour /api
-    setTimeout(fetchData, 1000);
-  </script>
 </body>
 </html>
+
 

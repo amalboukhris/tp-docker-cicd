@@ -1,21 +1,22 @@
 version: "3.3"
 
 services:
+
   backend:
     build: ./backend
     container_name: tp-backend
     ports:
       - "3000:3000"
-    environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      DB_NAME: mydb
-    depends_on:
-      - db
     networks:
       - webnet
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=admin
+      - DB_PASSWORD=secret
+      - DB_NAME=mydb
 
   frontend:
     build: ./frontend
@@ -28,22 +29,21 @@ services:
       - webnet
 
   db:
-    image: postgres:15-alpine
+    build: ./database
     container_name: tp-db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: mydb
-    ports:
-      - "5432:5432"
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=mydb
     volumes:
       - db-data:/var/lib/postgresql/data
     networks:
       - webnet
+    ports:
+      - "5432:5432"   # Optionnel (tester avec pgAdmin/psql)
 
 networks:
   webnet:
-    driver: bridge
 
 volumes:
   db-data:
